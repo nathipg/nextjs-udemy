@@ -1,43 +1,59 @@
+import { MongoClient, ObjectId } from 'mongodb';
+
 import MeetupDetail from '../../components/meetups/MeetupDetail';
 
-const DUMMY_MEETUP = {
-  id: 'm2',
-  title: 'Meetup 2',
-  image:
-    'https://cdn.panrotas.com.br/portal-panrotas-statics/media-files-cache/303442/cb37a25bd572aaa498e6deb90b35eb97sp/0,0,1280,958/full,0.29/0/default.jpeg',
-  address: 'Some address 2',
-  description: 'A meetup 2',
-};
-
-const MeetupDetails = () => {
+const MeetupDetails = ({ meetup }) => {
   return (
     <MeetupDetail
-      id={DUMMY_MEETUP.id}
-      title={DUMMY_MEETUP.title}
-      image={DUMMY_MEETUP.image}
-      address={DUMMY_MEETUP.address}
-      description={DUMMY_MEETUP.description}
+      id={meetup.id}
+      title={meetup.title}
+      image={meetup.image}
+      address={meetup.address}
+      description={meetup.description}
     />
   );
 };
 
 export const getStaticPaths = async () => {
+  const client = await MongoClient.connect(
+    'mongodb+srv://root:root@cluster0.gqup1.mongodb.net/meetups?retryWrites=true&w=majority'
+  );
+  const db = client.db();
+  const meetupsCollection = db.collection('meetups');
+  const meetups = await meetupsCollection.find({}, { _id: 1 }).toArray();
+
+  client.close();
+
   return {
     fallback: false,
-    paths: [{ params: { id: 'm1' } }, { params: { id: 'm2' } }],
+    paths: meetups.map(meetup => ({
+      params: { id: meetup._id.toString() },
+    })),
   };
 };
 
 export const getStaticProps = async context => {
   const { id } = context.params;
 
-  console.log({ id });
+  const client = await MongoClient.connect(
+    'mongodb+srv://root:root@cluster0.gqup1.mongodb.net/meetups?retryWrites=true&w=majority'
+  );
+  const db = client.db();
+  const meetupsCollection = db.collection('meetups');
 
-  // fetch data for a single meetup
+  const meetup = await meetupsCollection.findOne({ _id: ObjectId(id) });
+
+  client.close();
 
   return {
     props: {
-      meetup: { ...DUMMY_MEETUP },
+      meetup: {
+        id: meetup._id.toString(),
+        title: meetup.title,
+        image: meetup.image,
+        address: meetup.address,
+        description: meetup.description,
+      },
     },
   };
 };

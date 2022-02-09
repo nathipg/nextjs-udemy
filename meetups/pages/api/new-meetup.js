@@ -8,8 +8,8 @@ const handler = async (req, res) => {
       'mongodb+srv://root:root@cluster0.gqup1.mongodb.net/meetups?retryWrites=true&w=majority'
     );
     const db = client.db();
-
     const meetupsCollection = db.collection('meetups');
+
     const result = await meetupsCollection.insertOne(data);
 
     console.log(result);
