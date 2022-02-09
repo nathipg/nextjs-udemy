@@ -1,6 +1,6 @@
 import { MongoClient } from 'mongodb';
 
-async const handler = (req, res) => {
+const handler = async (req, res) => {
   if (req.method === 'POST') {
     const data = req.body;
 
